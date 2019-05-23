@@ -12,7 +12,7 @@ function loadPredefinedPanorama(evt) {
 
 	var PSV = new PhotoSphereViewer({
 		// Path to the panorama
-		panorama: 'sun.jpg',
+		panorama: 'snow.jpg',
 
 		// Container
 		container: div,
