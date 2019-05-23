@@ -45,6 +45,8 @@
 			<span id="btn4" data-index="4">4</span>
 		</div>
 		<script type="text/javascript">
+			document.body.addEventListener('touchmove', function (e) { e.preventDefault();}, {passive: false});
+			
 			window.onload = function() {
 				document.getElementById('btn1').addEventListener('click', loadPredefinedPanorama, false);
 				document.getElementById('btn2').addEventListener('click', loadPredefinedPanorama, false);
@@ -56,7 +58,6 @@
 			function loadPredefinedPanorama(evt) {
 
 				evt.preventDefault();
-				console.log(evt.currentTarget.dataset.index)
 
 				let imgSrc = 'images/'+evt.currentTarget.dataset.index+'.jpg'
 
