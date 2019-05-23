@@ -66,32 +66,26 @@
 			/* 以下六个面 拼接成立方体 */
 			var sides = [
 			{
-				url: src + 'left' + format,
 				position: [-width / 2, 0, 0], /* 左 */
 				rotation: [0, Math.PI / 2, 0]
 			},
 			{
-				url: src + 'right' + format,
 				position: [width / 2, 0, 0], /* 右 */
 				rotation: [0, -Math.PI / 2, 0]
 			},
 			{
-				url: src + 'top' + format,
 				position: [0, width / 2, 0], /* 上 */
 				rotation: [Math.PI / 2, 0, Math.PI]
 			},
 			{
-				url: src + 'bottom' + format,
 				position: [0, -width / 2, 0], /* 下 */
 				rotation: [-Math.PI / 2, 0, Math.PI]
 			},
 			{
-				url: src + 'back' + format,
 				position: [0, 0, width / 2], /* 后 */
 				rotation: [0, Math.PI, 0]
 			},
 			{
-				url: src + 'front' + format,
 				position: [0, 0, -width / 2], /* 前 */
 				rotation: [0, 0, 0]
 			}
