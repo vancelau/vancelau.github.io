@@ -46,7 +46,7 @@
 		</div>
 		<script type="text/javascript">
 			document.body.addEventListener('touchmove', function (e) { e.preventDefault();}, {passive: false});
-			
+
 			window.onload = function() {
 				document.getElementById('btn1').addEventListener('click', loadPredefinedPanorama, false);
 				document.getElementById('btn2').addEventListener('click', loadPredefinedPanorama, false);
@@ -71,7 +71,7 @@
 					container: div,
 
 					// Deactivate the animation
-					time_anim: false,
+					time_anim: 800,
 
 					// Display the navigation bar
 					navbar: true,
