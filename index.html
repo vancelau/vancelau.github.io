@@ -1,222 +1,245 @@
-
 <!DOCTYPE html>
 <html>
 <head>
+	<title>three.js css3d - panorama</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<title>three.js css3d - panorama</title>
 	<style>
 		body {
-			background-color: #000000;
 			margin: 0;
-			cursor: move;
 			overflow: hidden;
-		}
-
-		a {
-			color: #ffffff;
-		}
-
-		#info {
-			position: absolute;
-			width: 100%;
-			color: #ffffff;
-			padding: 5px;
-			font-family: Monospace;
-			font-size: 13px;
-			font-weight: bold;
-			text-align: center;
-			z-index: 1;
 		}
 	</style>
 </head>
 <body>
-	<script src="three.min.js"></script> <!-- 此处引入threejs基础类 -->
-	<script src="CSS3DRenderer.js"></script> <!-- 此处引入CSS3Drenderer.js类 -->
-	<!-- 以上两个文件，在下载threejs的时候就有的，引入就好 -->
+	<script src="three.min.js"></script>
+	<script src="CSS3DRenderer.js"></script>
+
 	<script>
+
 		var camera, scene, renderer;
-		var geometry, material, mesh;
+
+		/* 相机聚焦点 */
 		var target = new THREE.Vector3();
 
+		/* lon:经度， lat:维度  经纬度是相机的聚焦点 */
 		var lon = 90, lat = 0;
+
+		/* 相机聚焦点，弧度制 */
 		var phi = 0, theta = 0;
 
+		/* 移动端输入的x,y */
 		var touchX, touchY;
 
-		init();
-		animate();
+		/* 图片路径 */
+		var src = 'img.jpg';
 
-		function init() {
+		/* 因为图片加载比较慢可以先设置一个背景图 */
+		document.body.style.backgroundImage = 'url('+src+")";
+		document.body.style.backgroundRepeat = 'no-repeat';
+		document.body.style.backgroundSize = window.innerWidth+'px '+window.innerHeight+'px';
 
-			camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
+		var img = new Image();
+		img.src = src;
+
+		/* 图片加载完之后调用 */
+		img.onload = function () {
+
+			init(img.width, src);
+			animate();
+
+		};
+
+		function init(width, imageSrc) {
+
+			img = null;
+
+			camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
 
 			scene = new THREE.Scene();
 
+			/* 图片路径 */
+			let src = imageSrc.substring(0, imageSrc.indexOf('.') + 1);
+
+			/* 图片格式 */
+			let format = imageSrc.slice(imageSrc.lastIndexOf('.'));
+
+			/* 以下六个面 拼接成立方体 */
+			var sides = [
+			{
+				url: src + 'left' + format,
+				position: [-width / 2, 0, 0], /* 左 */
+				rotation: [0, Math.PI / 2, 0]
+			},
+			{
+				url: src + 'right' + format,
+				position: [width / 2, 0, 0], /* 右 */
+				rotation: [0, -Math.PI / 2, 0]
+			},
+			{
+				url: src + 'top' + format,
+				position: [0, width / 2, 0], /* 上 */
+				rotation: [Math.PI / 2, 0, Math.PI]
+			},
+			{
+				url: src + 'bottom' + format,
+				position: [0, -width / 2, 0], /* 下 */
+				rotation: [-Math.PI / 2, 0, Math.PI]
+			},
+			{
+				url: src + 'back' + format,
+				position: [0, 0, width / 2], /* 后 */
+				rotation: [0, Math.PI, 0]
+			},
+			{
+				url: src + 'front' + format,
+				position: [0, 0, -width / 2], /* 前 */
+				rotation: [0, 0, 0]
+			}
+			];
 			var canvas = document.createElement('canvas');
-        // var image = document.createElement('img');
-        var image = new Image();
+			canvas.width = width;
+			canvas.height = width;
 
-        image.src = 'img.jpg'; // 画图，这里引入的这张图片，是一张图上集合了6张图片
-        let width = image.width
+			for (var i = 0; i < sides.length; i++) {
 
-        canvas.width = width;
-        canvas.height = width;
+				var cxt = canvas.getContext("2d");
+				cxt.drawImage(img, 0, -width*i);
+				var side = sides[ i ];
 
-/** 次数是重点说明的
- * 这个sides对应的是六张图位于立体坐标轴内的位置，里面的position又包含x,y,三个轴
- * 然后ratation是三个轴上的变换
- */ 
- var sides = [
- {
-                position: [ width / 2, 0, 0 ], // 1
-                rotation: [ 0, -Math.PI / 2, 0 ]
-            },
-            {
-                position: [ -width / 2, 0, 0 ], // 2
-                rotation: [ 0, Math.PI / 2, 0 ]
-            },
-            {
-                position: [ 0,  width / 2, 0 ], // 3
-                rotation: [ Math.PI / 2, 0, Math.PI ]
-            },
-            {
-                position: [ 0, -width / 2, 0 ], // 4
-                rotation: [ - Math.PI / 2, 0, Math.PI ]
-            },
-            {
-                position: [ 0, 0,  width / 2 ], // 5
-                rotation: [ 0, Math.PI, 0 ]
-            },
-            {
-                position: [ 0, 0, -width / 2 ], // 6
-                rotation: [ 0, 0, 0 ]
+				var element = document.createElement( 'img' );
+                element.width = width + 6; // 2 pixels extra to close the gap.
+                document.getElementsByTagName('body')[0].appendChild(canvas);
+                var _img_url = canvas.toDataURL("image/png"); // 获取图片位置
+                element.src = _img_url;
+
+                var css3Loader = new THREE.CSS3DObject(element);
+                css3Loader.position.fromArray(side.position);
+                css3Loader.rotation.fromArray(side.rotation);
+
+                scene.add(css3Loader);
+
             }
-            ];
-
-            
-        // 这里有判断image.onload，这里是判断创建的image节点是否把引入的图片加载进来
-        image.onload = function() {
-                for ( var i = 0; i < sides.length; i ++ ) { // 由于是六张图放在一张图片上，然后这里分割六张图片
-                	var cxt = canvas.getContext("2d");
-                	cxt.drawImage(image, 0, -width*i);
-                	var side = sides[ i ];
-
-                	var element = document.createElement( 'img' );
-                    element.width = width+2; // 2 pixels extra to close the gap.
-                    document.getElementsByTagName('body')[0].appendChild(canvas);
-                    var _img_url = canvas.toDataURL("image/png"); // 获取图片位置
-                    element.src = _img_url;
-                    var object = new THREE.CSS3DObject( element ); // 这里根据sides把图片放在坐标轴上进行渲染
-                    object.position.fromArray( side.position );
-                    object.rotation.fromArray( side.rotation );
-                    scene.add( object );
-                }
-            }
-
 
             renderer = new THREE.CSS3DRenderer();
-            renderer.setSize( window.innerWidth, window.innerHeight );
-            document.body.appendChild( renderer.domElement );
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
 
-        //
 
-        document.addEventListener( 'mousedown', onDocumentMouseDown, false );
-        document.addEventListener( 'mousewheel', onDocumentMouseWheel, false );
+            document.addEventListener('mousedown', onDocumentMouseDown, false);
+            document.addEventListener('wheel', onDocumentMouseWheel, false);
 
-        document.addEventListener( 'touchstart', onDocumentTouchStart, false );
-        document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+            document.addEventListener('touchstart', onDocumentTouchStart, false);
+            document.addEventListener('touchmove', onDocumentTouchMove, false);
 
-        window.addEventListener( 'resize', onWindowResize, false );
+            window.addEventListener('resize', onWindowResize, false);
 
-    }
+        }
 
-    function onWindowResize() {
+        function onWindowResize() {
 
-    	camera.aspect = window.innerWidth / window.innerHeight;
-    	camera.updateProjectionMatrix();
+        	camera.aspect = window.innerWidth / window.innerHeight;
+        	camera.updateProjectionMatrix();
 
-    	renderer.setSize( window.innerWidth, window.innerHeight );
+        	renderer.setSize(window.innerWidth, window.innerHeight);
 
-    }
+        }
 
-    function onDocumentMouseDown( event ) {
+        function onDocumentMouseDown(event) {
 
-    	event.preventDefault();
+        	event.preventDefault();
 
-    	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-    	document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+        	document.body.style.cursor = 'move';
 
-    }
+        	document.addEventListener('mousemove', onDocumentMouseMove, false);
+        	document.addEventListener('mouseup', onDocumentMouseUp, false);
 
-    function onDocumentMouseMove( event ) {
+        }
 
-    	var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-    	var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+        function onDocumentMouseMove(event) {
 
-    	lon -= movementX * 0.1;
-    	lat += movementY * 0.1;
+        	var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+        	var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
-    }
+        	/* 拖动速度随相机视角的变动而变动 */
+        	var speed = camera.fov * 0.0015;
 
-    function onDocumentMouseUp( event ) {
+        	/* 经纬度平移速度 */
+        	lon -= movementX * speed;
+        	lat += movementY * speed;
 
-    	document.removeEventListener( 'mousemove', onDocumentMouseMove );
-    	document.removeEventListener( 'mouseup', onDocumentMouseUp );
 
-    }
+        }
 
-    function onDocumentMouseWheel( event ) {
+        function onDocumentMouseUp(event) {
 
-    	camera.fov -= event.wheelDeltaY * 0.05;
-    	camera.updateProjectionMatrix();
+        	event.preventDefault();
 
-    }
+        	document.body.style.cursor = 'auto';
 
-    function onDocumentTouchStart( event ) {
+        	document.removeEventListener('mousemove', onDocumentMouseMove);
+        	document.removeEventListener('mouseup', onDocumentMouseUp);
 
-    	event.preventDefault();
+        }
 
-    	var touch = event.touches[ 0 ];
+        function onDocumentMouseWheel(event) {
 
-    	touchX = touch.screenX;
-    	touchY = touch.screenY;
+        	/* 缩放速度 */
+        	var speed = 0.008;
 
-    }
+        	var fov = camera.fov + event.deltaY * speed;
 
-    function onDocumentTouchMove( event ) {
+        	/* 角度缩放最值 */
+        	camera.fov = THREE.Math.clamp(fov, 45, 95);
 
-    	event.preventDefault();
+        	camera.updateProjectionMatrix();
 
-    	var touch = event.touches[ 0 ];
+        }
 
-    	lon -= ( touch.screenX - touchX ) * 0.1;
-    	lat += ( touch.screenY - touchY ) * 0.1;
+        function onDocumentTouchStart(event) {
 
-    	touchX = touch.screenX;
-    	touchY = touch.screenY;
+        	event.preventDefault();
 
-    }
+        	var touch = event.touches[0];
 
-    function animate() {
+        	touchX = touch.screenX;
+        	touchY = touch.screenY;
 
-    	requestAnimationFrame( animate );
+        }
 
-    	lon +=  0.1;
-    	lat = Math.max( - 85, Math.min( 85, lat ) );
-    	phi = THREE.Math.degToRad( 90 - lat );
-    	theta = THREE.Math.degToRad( lon );
+        function onDocumentTouchMove(event) {
 
-    	target.x = Math.sin( phi ) * Math.cos( theta );
-    	target.y = Math.cos( phi );
-    	target.z = Math.sin( phi ) * Math.sin( theta );
+        	event.preventDefault();
 
-    	camera.lookAt( target );
+        	var touch = event.touches[0];
 
-    	renderer.render( scene, camera );
+        	lon -= (touch.screenX - touchX) * 0.1;
+        	lat += (touch.screenY - touchY) * 0.1;
 
-    }
+        	touchX = touch.screenX;
+        	touchY = touch.screenY;
 
-</script>
+        }
+
+        function animate() {
+
+        	requestAnimationFrame(animate);
+
+        	lat = Math.max(-85, Math.min(85, lat));
+        	phi = THREE.Math.degToRad(90 - lat);
+        	theta = THREE.Math.degToRad(lon);
+
+        	target.x = Math.sin(phi) * Math.cos(theta);
+        	target.y = Math.cos(phi);
+        	target.z = Math.sin(phi) * Math.sin(theta);
+
+        	camera.lookAt(target);
+
+        	renderer.render(scene, camera);
+
+        }
+
+    </script>
 </body>
 </html>
+
