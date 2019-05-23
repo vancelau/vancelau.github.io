@@ -16,20 +16,55 @@
 				width: 100vw;
 				height: 100vh;
 			}
+			.btn-box{
+				position: fixed;
+				bottom: 5%;
+				left: 0;
+				display: flex;
+				width: 100%;
+				justify-content: center;
+			}
+			.btn-box span{
+				margin: 2vw;
+				width: 15vw;
+				height: 10vw;
+				line-height: 10vw;
+				text-align: center;
+				font-size: 2vw;
+				background-color: #eee;
+				border-radius: 1vw;
+			}
 		</style>
 	</head>
 	<body>
 		<div id="container"></div>
+		<div class="btn-box">
+			<span id="btn1" data-index="1">1</span>
+			<span id="btn2" data-index="2">2</span>
+			<span id="btn3" data-index="3">3</span>
+			<span id="btn4" data-index="4">4</span>
+		</div>
 		<script type="text/javascript">
-			loadPredefinedPanorama()
+			window.onload = function() {
+				document.getElementById('btn1').addEventListener('click', loadPredefinedPanorama, false);
+				document.getElementById('btn2').addEventListener('click', loadPredefinedPanorama, false);
+				document.getElementById('btn3').addEventListener('click', loadPredefinedPanorama, false);
+				document.getElementById('btn4').addEventListener('click', loadPredefinedPanorama, false);
+			};
+
 			// Load the predefined panorama
-			function loadPredefinedPanorama() {
+			function loadPredefinedPanorama(evt) {
+
+				evt.preventDefault();
+				console.log(evt.currentTarget.dataset.index)
+
+				let imgSrc = 'images/'+evt.currentTarget.dataset.index+'.jpg'
 
 				var div = document.getElementById('container');
 
 				var PSV = new PhotoSphereViewer({
 					// Path to the panorama
-					panorama: 'snow.jpg',
+					panorama: imgSrc,
 
 					// Container
 					container: div,
